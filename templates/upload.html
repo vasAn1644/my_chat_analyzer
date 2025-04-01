@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Завантаження JSON-файлу чату</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="upload-container">
+        <div class="upload-box">
+            <h2>Завантаження JSON-файлу чату</h2>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <label for="file-upload" class="file-label">Виберіть JSON-файл чату:</label>
+                <input type="file" id="file-upload" name="file" accept=".json" required>
+                <button type="submit">Завантажити</button>
+            </form>
+        </div>
+        <div class="instructions-container">
+            <div class="instructions">
+                <h3>Експорт із Telegram</h3>
+                <ol>
+                    <li>Відкрийте Telegram на комп’ютері (версія для настільних ПК).</li>
+                    <li>Перейдіть до чату, який хочете експортувати.</li>
+                    <li>Натисніть на три крапки у верхньому правому куті чату.</li>
+                    <li>Виберіть <strong>"Експортувати історію чату"</strong>.</li>
+                    <li>У налаштуваннях виберіть формат <strong>JSON</strong> і зніміть галочки з непотрібних даних (фото, файли тощо), якщо хочете менший розмір файлу.</li>
+                    <li>Натисніть <strong>"Експортувати"</strong> і дочекайтеся завершення.</li>
+                    <li>Знайдіть файл <code>result.json</code> у папці завантажень і завантажте його тут.</li>
+                </ol>
+            </div>
+            <div class="instructions">
+                <h3>Експорт із Discord</h3>
+                <ol>
+                    <li>Завантажте останню версію <a href="https://github.com/Tyrrrz/DiscordChatExporter" target="_blank">DiscordChatExporter</a> (потрібен Windows або CLI для Linux/Mac).</li>
+                    <li>Отримайте токен бота або використайте токен вашого акаунта (докладніше <a href="https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token" target="_blank">тут</a>).</li>
+                    <li>Відкрийте програму та виберіть канали, які хочете експортувати.</li>
+                    <li>Натисніть жовту кнопку в нижньому правому куті.</li>
+                    <li>Виберіть формат <strong>JSON</strong>.</li>
+                    <li>Натисніть <strong>"Export"</strong>, щоб зберегти файл.</li>
+                    <li>Знайдіть експортований файл <code>.json</code> і завантажте його тут.</li>
+                </ol>
+            </div>
+            <div class="instructions">
+                <h3>Експорт із WhatsApp</h3>
+                <ol>
+                    <li>Відкрийте WhatsApp на телефоні.</li>
+                    <li>Перейдіть до чату, який хочете експортувати.</li>
+                    <li>Натисніть на три крапки у верхньому правому куті.</li>
+                    <li>Виберіть <strong>"Ще"</strong>, потім <strong>"Експортувати чат"</strong>.</li>
+                    <li>Виберіть <strong>"Без медіа"</strong> або <strong>"З медіа"</strong> (останнє збільшить розмір файлу).</li>
+                    <li>Збережіть файл через Telegram: надішліть його собі або в інший чат.</li>
+                    <li>Завантажте файл із Telegram у форматі <strong>JSON</strong> (WhatsApp сам по собі не підтримує JSON, тому потрібен додатковий конвертер, наприклад, <a href="https://github.com/knadh/whatsapp-chat-parser" target="_blank">цей</a>) і завантажте його тут.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналіз Чату та ШІ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="stats">
+            <h2>Аналіз Чату</h2>
+            <div class="stats-container">
+                <div class="text-stats">
+                    <h3>Середня кількість повідомлень на день</h3>
+                    <p id="averageMessagesPerDay">...</p>
+                    <h3>Найуживаніші слова</h3>
+                    <ul id="mostUsedWords"></ul>
+                </div>
+                <div class="chart-stats">
+                    <div>
+                        <h3>Найактивніші дні</h3>
+                        <canvas id="activeDaysChart"></canvas>
+                    </div>
+                    <div>
+                        <h3>Розподіл за днями тижня</h3>
+                        <canvas id="weeklyActivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="full-width-charts">
+                <div>
+                    <h3>Годинний розподіл</h3>
+                    <canvas id="hourlyActivityChart"></canvas>
+                </div>
+                <div>
+                    <h3>Розподіл між учасниками</h3>
+                    <canvas id="participantsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="chat">
+            <h2>Чат із ШІ</h2>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="chat-input">
+                <input type="text" id="userInput" class="message-input" placeholder="Ваше питання...">
+                <button onclick="sendMessage()">Запитати</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchStats() {
+            const response = await fetch('/stats');
+            const data = await response.json();
+    
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+    
+            if (data.is_truncated) {
+                alert("Файл завеликий, оброблено лише останні 2500 повідомлень.");
+            }
+    
+            document.getElementById('averageMessagesPerDay').textContent = data.average_messages_per_day || 'Немає даних';
+            
+            const wordsList = document.getElementById('mostUsedWords');
+            wordsList.innerHTML = '';
+            if (data.most_used_words.length > 0) {
+                data.most_used_words.forEach(word => {
+                    const li = document.createElement('li');
+                    li.textContent = `${word[0]}: ${word[1]}`;
+                    wordsList.appendChild(li);
+                });
+            } else {
+                wordsList.innerHTML = '<li>Слова не знайдено</li>';
+            }
+            
+            const weekdayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+            const hourLabels = Array.from({length: 24}, (_, i) => `${i}:00`);
+    
+            new Chart(document.getElementById('activeDaysChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: data.most_active_dates.map(d => d[0]) || ['Немає даних'],
+                    datasets: [{ label: 'Повідомлення', data: data.most_active_dates.map(d => d[1]) || [0], backgroundColor: 'rgba(52, 152, 219, 0.5)' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            
+            new Chart(document.getElementById('weeklyActivityChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: weekdayLabels,
+                    datasets: [{ label: 'Повідомлення', data: Object.values(data.weekly_activity) || Array(7).fill(0), backgroundColor: 'rgba(46, 204, 113, 0.5)' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            
+            new Chart(document.getElementById('hourlyActivityChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: hourLabels,
+                    datasets: [{ label: 'Повідомлення', data: Object.values(data.hourly_activity) || Array(24).fill(0), borderColor: 'rgba(155, 89, 182, 1)', fill: false }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            
+            new Chart(document.getElementById('participantsChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data.participants) || ['Немає даних'],
+                    datasets: [{
+                        label: 'Кількість повідомлень',
+                        data: Object.values(data.participants) || [0],
+                        backgroundColor: ['rgba(231, 76, 60, 0.5)', 'rgba(52, 152, 219, 0.5)', 'rgba(46, 204, 113, 0.5)', 'rgba(155, 89, 182, 0.5)', 'rgba(241, 196, 15, 0.5)']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            const userMessage = input.value;
+            input.value = '';
+            
+            chatBox.innerHTML += `<p><b>Ви:</b> ${userMessage}</p>`;
+            
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({question: userMessage})
+            });
+            const data = await response.json();
+            
+            chatBox.innerHTML += `<p><b>ШІ:</b> ${data.answer || 'Немає відповіді'}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    
+        fetchStats();
+    </script>
+</body>
+</html>
